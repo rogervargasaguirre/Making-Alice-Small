@@ -17,7 +17,7 @@ public class SaveData implements Serializable
     private short occurrances = 0;
 
     /**
-     * Creates a new instance of SaveDate
+     * Creates a new instance of SaveData
      */
     public SaveData() {}
     
