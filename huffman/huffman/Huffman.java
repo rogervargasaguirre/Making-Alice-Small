@@ -125,7 +125,7 @@ public class Huffman
      * @return the selected file
      */
     private static File getFile(){
-         String inputFileName = "x";
+        String inputFileName = "x";
         File inputFile = new File(inputFileName);
         JFileChooser chooser = new JFileChooser();
         FileNameExtensionFilter exten = new FileNameExtensionFilter("Text Document", "txt");
