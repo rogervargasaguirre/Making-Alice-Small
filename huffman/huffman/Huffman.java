@@ -8,6 +8,9 @@ package huffman;
 import java.util.*;
 import java.lang.*;
 import java.io.*;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
 /**
  *
  * @author pbladek
@@ -73,8 +76,16 @@ public class Huffman
      */
     public void encode(String fileName)
     {
+        File inputFile = new File(fileName);
+            if (!((inputFile.exists()) && (inputFile.canRead()))) {
+                inputFile = getFile();
+                fileName =inputFile.getName();
       // YOUR CODE HERE
-
+            }
+            else {
+            inputFile = getFile();
+            fileName = inputFile.getName();  
+        }
 
 
         writeEncodedFile(byteArray, fileName);
@@ -108,6 +119,29 @@ public class Huffman
     public void writeKeyFile(String fileName)
     {
   
+    }
+         /**
+     * The method to get the file.
+     * @return the selected file
+     */
+    private static File getFile(){
+         String inputFileName = "x";
+        File inputFile = new File(inputFileName);
+        JFileChooser chooser = new JFileChooser();
+        FileNameExtensionFilter exten = new FileNameExtensionFilter("Text Document", "txt");
+        chooser.setFileFilter(exten);
+        chooser.setCurrentDirectory(inputFile.getAbsoluteFile()
+                .getParentFile());
+        int returnValue = chooser.showOpenDialog(null);
+        if (returnValue == JFileChooser.APPROVE_OPTION){
+            inputFile = chooser.getSelectedFile();
+            if(!inputFile.exists() || !inputFile.canRead()){
+                JOptionPane.showMessageDialog(null,"Can not read this file,"
+                        + " please try another");
+                getFile();
+            }
+        }
+        return inputFile;
     }
  
 }
