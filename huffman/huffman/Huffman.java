@@ -92,13 +92,44 @@ public class Huffman
         writeKeyFile(fileName);
     } 
  
+    /**
+     *  Creates an array of bytes from a code file containing instructions for
+     * a huffman tree
+     * @param fileName String file with huffman tree code
+     * @return byte[] Array of byte values
+     */
+    public byte[] decodeCode(String fileName){
+        return new byte[0];
+    }
     /*
      * decode
      * @param inFileName the file to decode
      */   
-    public void decode(String inFileName)
+    public void decode(String inFileName) throws FileNotFoundException, IOException
     { 
-     
+        String lineOut = "";
+        File inFile = new File(inFileName);
+        String outFileName = inFileName.replaceAll(".huf", ".txt");
+        File outFile = new File(outFileName); 
+        PrintWriter out = new PrintWriter(outFile);
+        if (keyMap == null)
+            decodeCode(inFileName);
+        FileReader reader = new FileReader(inFile);
+        BufferedReader readCode = new BufferedReader(reader);
+        String line = readCode.readLine();
+        
+        while (line != null){
+            Character addChar = getChar(line); 
+            if (addChar != '\n'){
+                out.println(lineOut);
+                lineOut = "";
+            }
+            else{
+                lineOut += addChar;
+            }
+            line = readCode.readLine();
+        }
+         
     }
       
     /**
