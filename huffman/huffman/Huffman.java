@@ -12,8 +12,19 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 /**
- *
- * @author pbladek
+ *<pre>
+ *              Huffman Tree Compression
+ * File:        Huffman.java
+ * Description: The purpose of this program is to compress a txt file using a 
+ *              huffman compression scheme. The program may also decode a 
+ *              huffman file when a -d flag is used
+ * @author      James Hua, Blake Hashimoto, Roger Vargas, Wei Jiang
+ * @since       6/1/15
+ * log:         6/1/15 Created the encode method
+ *              6/5/15 Created the decode method
+ * Special Thanks to
+ * Paul Bladek
+ * </pre>
  */
 public class Huffman
 {  
