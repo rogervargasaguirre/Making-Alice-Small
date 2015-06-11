@@ -118,29 +118,66 @@ public class Huffman
      */   
     public void decode(String inFileName) throws FileNotFoundException, IOException
     { 
-        String lineOut = "";
+       String lineOut = "";
         File inFile = new File(inFileName);
-        String outFileName = inFileName.replaceAll(".huf", ".txt");
+        String outFileName = inFileName.replaceAll("\\Q.huf\\E", ".txt");
         File outFile = new File(outFileName); 
-        PrintWriter out = new PrintWriter(outFile);
-        if (keyMap == null)
-            decodeCode(inFileName);
+        
         FileReader reader = new FileReader(inFile);
         BufferedReader readCode = new BufferedReader(reader);
         String line = readCode.readLine();
+        ArrayList<Byte> saveData = new ArrayList<>();
+        Byte valueOfLine = -1;
         
-        while (line != null){
-            Character addChar = getChar(line); 
-            if (addChar != '\n'){
-                out.println(lineOut);
-                lineOut = "";
+        try (PrintWriter out = new PrintWriter(outFile)) {
+            if (keyMap == null)
+                theTree = new HuffmanTree<>(decodeCode(inFileName));
+            codeMap = theTree.getKeyMap();
+            String overflow = "";
+            while (line != null){
+                line = overflow + line;
+                overflow = "";
+                if (line.length() % 8 != 0){
+                    int overLength = line.length() % 8;
+                    overflow = line.substring(line.length() - overLength, line.length());
+                    line = line.substring(0, line.length() - overLength);
+                }
+                while (line.length() >= 8){
+                    String holdEight = line.substring(0, 8);
+                    if (line.length() > 8)
+                        line = line.substring(8);
+                    else{
+                        line = "";
+                    }
+                    byte stringToByte = 0;
+                    for (int i = 7; i >= 0; i--){
+                        char byteAtPos = holdEight.charAt(7 - i);
+                        byte readIn = 0;
+                        if (byteAtPos == '1')
+                            readIn = (byte)1;
+                        readIn <<= i;
+                        stringToByte |= readIn;
+                    }
+                    saveData.add(stringToByte);
+                }
+                line = readCode.readLine();
             }
-            else{
-                lineOut += addChar;
+            saveDataArray = new byte[saveData.size()];
+            for (int i = 0; i < saveData.size(); i++)
+                saveDataArray[i] = saveData.get(i);
+            saveData = null;
+            
+            for (int i = 0; i < saveDataArray.length; i++){
+                Character addChar = codeMap.get(saveDataArray[i]);
+                if (addChar == '\n'){
+                    out.println(lineOut);
+                    lineOut = "";
+                }
+                else{
+                    lineOut += addChar;
+                }
             }
-            line = readCode.readLine();
-        }
-         
+        } 
     }
       
     /**
