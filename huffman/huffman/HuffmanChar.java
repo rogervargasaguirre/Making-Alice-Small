@@ -1,13 +1,8 @@
 /*
  * HuffmanChar.java
- *
- * Created on May 22, 2007, 5:26 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
  */
 
-package huffman;
+package Huffman;
 import java.io.*;
 /**
  *
@@ -15,7 +10,10 @@ import java.io.*;
  */
 public class HuffmanChar extends HuffmanData<Character>
         implements Serializable
-{    
+{  
+    public static final int BITS_IN_BYTE = 8;
+    public static final int BYTE_SIZE_NUMBER = 256;
+  
     /**
      * Creates a new instance of HuffmanChar
      */
@@ -60,10 +58,10 @@ public class HuffmanChar extends HuffmanData<Character>
     public HuffmanChar(byte[] threeBytes)
     {
         super(new Character((char)threeBytes[0]),
-            (((int)threeBytes[2] >= 0 ? (int)threeBytes[2]
-            : (256 + (int)threeBytes[2])) << 8)
-            | ((int)threeBytes[2] >= 0 ? (int)threeBytes[2]
-            : 256 + (int)threeBytes[2]));
+            ((int)threeBytes[2]) >= 0 ? (int)threeBytes[2] |
+                    ((int)threeBytes[1] << BITS_IN_BYTE)
+            : ((BYTE_SIZE_NUMBER + (int)threeBytes[2]) +
+                    ((int)threeBytes[1] << BITS_IN_BYTE)));
     }
     
     /**
