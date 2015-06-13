@@ -4,7 +4,7 @@
  * Created on May 21, 2007, 1:01 PM
  */
 
-package huffman;
+package Huffman;
 import java.util.*;
 import java.lang.*;
 import java.io.*;
@@ -75,10 +75,15 @@ public class Huffman
                 textFileName = args[0];
         }
         Huffman coder = new Huffman();
-        if(!decode)
-            coder.encode(textFileName);
-        else
-            coder.decode(textFileName);
+        try{
+            if(!decode)
+                coder.encode(textFileName);
+            else
+                coder.decode(textFileName);
+            }
+            catch(Exception e){
+                  System.out.println(e.getClass() + e.getMessage());  
+        }
     }
 
     /*
@@ -91,26 +96,114 @@ public class Huffman
             if (!((inputFile.exists()) && (inputFile.canRead()))) {
                 inputFile = getFile();
                 fileName =inputFile.getName();
-      // YOUR CODE HERE
             }
             else {
             inputFile = getFile();
             fileName = inputFile.getName();  
         }
+        int[] counter = new int[CHARMAX];  
+        Scanner in = null;
+        List<HuffmanChar> countList = new ArrayList<>();
+        try
+        {
+          in = new Scanner(inputFile);
+        }
+        catch(FileNotFoundException e)
+        {
+            System.out.println("File open error");
+            return;
+        }
+        while(in.hasNextLine())
+        {
+            String line = in.nextLine();
+            line += "\n";
+            for (int i = 0; i < line.length(); i++){
+                Character a = line.charAt(i);
+                counter[a]++;
+            }
+            
+        }
+        for(int i = 0; i < counter.length; i ++)
+        {
+            if(counter[i] > 0)
+            {
+                countList.add(new HuffmanChar((char)i, counter[i]));
+            }
+        }
+        
+        charCountArray = countList.toArray(new HuffmanChar[countList.size()] );
+        countList = null;
+        Arrays.sort(charCountArray);
+        theTree = new HuffmanTree<>(charCountArray);
+        keyMap = theTree.getCodeMap();
+        codeMap = theTree.getKeyMap();
+        System.out.println(""+keyMap);
+       // System.out.println(""+ codeMap);
+        try
+        {
+          in = new Scanner(inputFile);
+        }
+        catch(FileNotFoundException e)
+        {
+            System.out.println("File open error");
+        }
+        ArrayList<Byte> arrayList = new ArrayList<>();
+        Character character;
+        String output = "";
+        String outputByte = null;
+        while(in.hasNextLine())
+        {
+             String line = in.nextLine();
+             line += "\n";
+             for(int i = 0; i < line.length(); i++)
+             {
+                output += keyMap.get(line.charAt(i));
+                while(output.length() > CHARBITS)
+                {
+                     outputByte = output.substring(0,8);
+                     output = output.substring(8);
+                     arrayList.add((byte)Integer.parseInt(outputByte, 2));
+                }
+            }
+            
+        }
+        while(output.length() != 0 && output.length() < 8)
+            output += "0";
+        arrayList.add((byte)Integer.parseInt(outputByte));
+        byteArray = toArray(arrayList);
+        arrayList = null;
+        
+        
+        
 
 
-        writeEncodedFile(byteArray, fileName);
+       File hufFile = writeEncodedFile(byteArray, fileName);
+       System.out.println(((float)hufFile.length() / inputFile.length() * 100.0) + "%");
         writeKeyFile(fileName);
     } 
- 
     /**
+     *Takes List and converts it to primitive byte array
+     * @param arrayList of Byte to convert
+     * @return byte[] array
+     */
+    public byte[] toArray(List<Byte> arrayList)
+    {
+        byte[] bytesArray = new byte[arrayList.size()];
+        for( int i = 0; i < arrayList.size(); i++ )
+        {
+            bytesArray[i] = arrayList.get(i);
+        }
+        return bytesArray;
+    }
+     /**
      *  Creates an array of bytes from a code file containing instructions for
      * a huffman tree
      * @param fileName String file with huffman tree code
-     * @return byte[] Array of byte values
+     * @return HuffmanData[] Array of huffman values
      */
-    public byte[] decodeCode(String fileName){
-        return new byte[0];
+    public HuffmanData<Character>[] decodeCode(String fileName){
+        
+        return new HuffmanData[0];
     }
     /*
      * decode
@@ -118,21 +211,29 @@ public class Huffman
      */   
     public void decode(String inFileName) throws FileNotFoundException, IOException
     { 
-       String lineOut = "";
         File inFile = new File(inFileName);
+            if (!((inFile.exists()) && (inFile.canRead()))) {
+                inFile = getFile();
+                inFileName =inFile.getName();
+            }
+            else {
+            inFile = getFile();
+            inFileName = inFile.getName();  
+        }
         String outFileName = inFileName.replaceAll("\\Q.huf\\E", ".txt");
         File outFile = new File(outFileName); 
         
+        int overSize = 0;
         FileReader reader = new FileReader(inFile);
         BufferedReader readCode = new BufferedReader(reader);
         String line = readCode.readLine();
-        ArrayList<Byte> saveData = new ArrayList<>();
-        Byte valueOfLine = -1;
+        
         
         try (PrintWriter out = new PrintWriter(outFile)) {
-            if (keyMap == null)
+            if (codeMap == null)
                 theTree = new HuffmanTree<>(decodeCode(inFileName));
             codeMap = theTree.getKeyMap();
+            ArrayList<Byte> saveData = new ArrayList<>();
             String overflow = "";
             while (line != null){
                 line = overflow + line;
@@ -149,46 +250,106 @@ public class Huffman
                     else{
                         line = "";
                     }
-                    byte stringToByte = 0;
-                    for (int i = 7; i >= 0; i--){
-                        char byteAtPos = holdEight.charAt(7 - i);
-                        byte readIn = 0;
-                        if (byteAtPos == '1')
-                            readIn = (byte)1;
-                        readIn <<= i;
-                        stringToByte |= readIn;
-                    }
-                    saveData.add(stringToByte);
+                    byte addValue = getByteValue(holdEight);
+                    saveData.add(addValue);
                 }
                 line = readCode.readLine();
+            }
+            if (overflow.length() > 0){
+                overSize = overflow.length();
+                while (overflow.length() < 8){
+                    overflow += '0';
+                }
+                saveData.add(getByteValue(overflow));
             }
             saveDataArray = new byte[saveData.size()];
             for (int i = 0; i < saveData.size(); i++)
                 saveDataArray[i] = saveData.get(i);
             saveData = null;
-            
-            for (int i = 0; i < saveDataArray.length; i++){
-                Character addChar = codeMap.get(saveDataArray[i]);
-                if (addChar == '\n'){
+            char[] addChar = traverseTree(saveDataArray, overSize); 
+            String lineOut = "";
+            for (int i = 0; i < addChar.length; i++){
+                if (addChar[i] == '\n'){
                     out.println(lineOut);
                     lineOut = "";
                 }
                 else{
-                    lineOut += addChar;
+                    lineOut += addChar[i];
                 }
             }
+            out.close();
         } 
     }
+    /**
+     * Takes a byte array and traverses the huffman tree to get the
+     * corresponding byte value
+     * @param data byte[] Array of bytes containing all the keys
+     * @param overflow int overflow for the last index to ignore
+     * @return 
+     */
+    public char[] traverseTree(byte[] data, int overflow){
+        ArrayList<Character> allChars = new ArrayList<>();
+        int iterations = 0;
+        for (int i = 0; i < data.length; i++){
+            
+        }
+        char[] charsArray = new char[allChars.size()];
+            for (int i = 0; i < allChars.size(); i++)
+                charsArray[i] = allChars.get(i);
+            allChars = null;
+            return charsArray;
+    }
+    /**
+     * Gets byte value for a string
+     * precondition: length of string is between 0 and 8 characters
+     * Note: Method will still work this precondition is for the purpose of the
+     * program
+     * @param getVals String of binary values to be read in
+     * @return byte representation of the character at a given position
+     */
+    public byte getByteValue(String getVals){
+        byte stringToByte = 0;
+        for (int i = getVals.length() - 1; i >= 0; i--){
+            int adjustment = i + 1;
+            char byteAtPos = getVals.charAt(getVals.length() - adjustment);
+            byte readIn = 0;
+            if (byteAtPos == '1')
+                readIn = (byte)1;
+            readIn <<= i;
+            stringToByte |= readIn;
+        }
+        return stringToByte;
+    }
+    /**
+     * Takes a line of binary values and transforms it to the corresponding char
+     * value
+     * @param toChar String to convert to char 
+     * @return Character value to be added to string
+     */
+      public Character getChar(String toChar){
+        
+        return 'a';
+      }
       
     /**
      * writeEncodedFile
      * @param bytes bytes for file
      * @param fileName file input
      */ 
-    public void writeEncodedFile(byte[] bytes, String fileName)
+    public File writeEncodedFile(byte[] bytes, String fileName)
     {
-      
-
+        String encodeFileName =
+                fileName.substring(0, fileName.lastIndexOf(".")) + ".huf";
+        try (ObjectOutputStream outputStream = new ObjectOutputStream(
+                new FileOutputStream(encodeFileName))) {
+            outputStream.write(bytes);
+        }
+        
+        catch(IOException e)
+        {
+            System.out.println("File open error");
+        }
+        return new File(encodeFileName);
     }
    
     /**
@@ -197,14 +358,35 @@ public class Huffman
      */
     public void writeKeyFile(String fileName)
     {
-  
+        String keyFileName =
+                fileName.substring(0, fileName.lastIndexOf(".")) + ".cod";
+        saveDataArray = new byte[charCountArray.length * 3];
+        for(int i = 0; i < charCountArray.length; i++)
+        {
+            byte[] threeByteArray = charCountArray[i].toThreeBytes();
+            saveDataArray[3 * i] = threeByteArray[0];
+            saveDataArray[3 * i + 1] = threeByteArray[1];
+            saveDataArray[3 * i + 2] = threeByteArray[2];
+        }
+        try (ObjectOutputStream outputStream = new ObjectOutputStream(
+                new FileOutputStream(keyFileName))) {
+            for (int i = 0; i <saveDataArray.length; i++)
+            {
+                outputStream.writeByte(saveDataArray[i]);
+            }
+            outputStream.close();
+        }
+        catch(IOException e)
+        {
+            System.out.println("File open error");
+        }
     }
-         /**
+     /**
      * The method to get the file.
      * @return the selected file
      */
     private static File getFile(){
-        String inputFileName = "x";
+         String inputFileName = "x";
         File inputFile = new File(inputFileName);
         JFileChooser chooser = new JFileChooser();
         FileNameExtensionFilter exten = new FileNameExtensionFilter("Text Document", "txt");
@@ -217,7 +399,10 @@ public class Huffman
             if(!inputFile.exists() || !inputFile.canRead()){
                 JOptionPane.showMessageDialog(null,"Can not read this file,"
                         + " please try another");
-                getFile();
+                int choice = JOptionPane.showConfirmDialog(null, "Choose Another File?", 
+                    "File Error", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                if (choice == JOptionPane.YES_OPTION)
+                    getFile();
             }
         }
         return inputFile;
