@@ -4,7 +4,7 @@
  * Created on May 21, 2007, 2:16 PM
  */
 
-package huffman;
+package Huffman;
 import java.util.*;
 /**
  * binary tree for Huffman coding
@@ -35,13 +35,35 @@ public class HuffmanTree<T extends Comparable<? super T>>
     public HuffmanTree(HuffmanData<T>[] dataArray) 
     {
         // your code here
-
-
-
+        super();  
+        LinkedList<BinaryNode<HuffmanData<T>>> nodeList 
+                = new LinkedList<>();    
+        for (HuffmanData<T> element : dataArray) {
+            BinaryNode<HuffmanData<T>> node = new BinaryNode<>(element);    
+            nodeList.add(node);  
+        }     
         
-         keyMap = new TreeMap<String, T>();
-         codeMap = new TreeMap<T, String>();
-         setMaps(getRootNode(), "");
+    while(nodeList.size() > 1)    
+       {    
+         boolean addBack = false;
+         this.add(nodeList.poll(),nodeList.poll()); 
+         for(int i =0; i < nodeList.size()&!addBack; i++){
+            if(nodeList.get(i).getData().compareTo(getRootData()) > 0){
+                nodeList.add(i,(BinaryNode<HuffmanData<T>>)this.getRootNode());
+                addBack = true;
+                break;
+            }
+            }
+         if(!addBack){
+        nodeList.add(0,(BinaryNode<HuffmanData<T>>)this.getRootNode());
+         }
+        //new node add to nodeQueue
+       }    
+        keyMap = new TreeMap<>();
+        codeMap = new TreeMap<>();
+        setMaps(getRootNode(), "");
+        System.out.println("" + leafCount);
+        System.out.println("" + this.getHeight());
     }
     
     /** 
@@ -59,6 +81,8 @@ public class HuffmanTree<T extends Comparable<? super T>>
          setTree(new HuffmanData<T>
                  (MARKER, left.getData().getOccurances()
                  + right.getData().getOccurances()), leftTree, rightTree);
+        // add to queue, root
+        //sort queue
     }
     
     /** 
@@ -92,8 +116,22 @@ public class HuffmanTree<T extends Comparable<? super T>>
      private void setMaps(BinaryNodeInterface<HuffmanData<T>> node,
              String codeString)
      { 
-       
-              
+        if(node == null)
+            return;
+        if(codeString == null)
+            codeString = "";
+        BinaryNodeInterface<HuffmanData<T>> left = node.getLeftChild();
+        BinaryNodeInterface<HuffmanData<T>> right = node.getRightChild();
+        if(left != null)
+            setMaps(left, codeString + '0');
+        if(right != null)
+            setMaps(right, codeString + '1');   
+        if(!node.hasLeftChild() && !node.hasRightChild())
+        {
+            codeMap.put(node.getData().getData(), codeString);
+            keyMap.put(codeString, node.getData().getData());
+            leafCount++;
+        }          
      }
     
     /*
