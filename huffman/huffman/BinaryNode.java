@@ -4,7 +4,7 @@
  * Created on May 21, 2007, 1:08 PM
  */
 
-package Huffman;
+package huffman;
 import java.io.*;
 /**
  *<pre>
