@@ -8,7 +8,16 @@ package huffman;
 import java.lang.*;
 
 /**
- * @author pbladek
+ *<pre>
+ *              Huffman Data
+ * File:        HuffmanData.java
+ * Description: Holds data to be used in the huffman tree for the huffman
+ *              compression
+ * @author      James Hua, Blake Hashimoto, Roger Vargas, Wei Jiang
+ * @since       6/1/15
+ * Special Thanks to
+ * Paul Bladek
+ * </pre>
  */
 public class HuffmanData<T extends Comparable<? super T>>
         implements Comparable<HuffmanData<T>>
