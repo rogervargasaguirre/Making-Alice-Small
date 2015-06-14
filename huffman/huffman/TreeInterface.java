@@ -7,7 +7,15 @@
 package huffman;
 
 /**
- * @author Carrano
+ *<pre>
+ *              TreeInterface.java
+ * File:        TreeInterface.java
+ * Description: Basic interface for binary tree
+ * @author      James Hua, Blake Hashimoto, Roger Vargas, Wei Jiang
+ * @since       6/1/15
+ * Special Thanks to
+ * Carrano
+ * </pre>
  */
 public interface TreeInterface<T>
 {
