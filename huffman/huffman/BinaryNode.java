@@ -4,11 +4,19 @@
  * Created on May 21, 2007, 1:08 PM
  */
 
-package huffman;
+package Huffman;
 import java.io.*;
 /**
- *
+ *<pre>
+ *              BinaryNode
+ * File:        BinaryNode.java
+ * Description: Nodes that holde data for the binary tree, they also reference other
+ *              data in the tree
+ * @author      James Hua, Blake Hashimoto, Roger Vargas, Wei Jiang
+ * @since       6/1/15
+ * Special Thanks to
  * @author Carrano
+ * </pre>
  */
 public class  BinaryNode < T > implements BinaryNodeInterface < T >, Serializable
 {
