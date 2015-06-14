@@ -8,7 +8,16 @@ package huffman;
 import java.util.*;
 
 /**
- * @author Carrano
+ *<pre>
+ *              Binary Tree
+ * File:        BinaryTree.java
+ * Description: Parent to huffman tree used in huffman compression
+ *              Provides basic binary search tree methods
+ * @author      James Hua, Blake Hashimoto, Roger Vargas, Wei Jiang
+ * @since       6/1/15
+ * Special Thanks to
+ * Carrano
+ * </pre>
  */
 public class BinaryTree<T> implements BinaryTreeInterface<T> ,
     java.io.Serializable
