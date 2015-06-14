@@ -4,11 +4,22 @@
  * Created on May 21, 2007, 2:16 PM
  */
 
-package Huffman;
+package huffman;
 import java.util.*;
 /**
- * binary tree for Huffman coding
- * @author pbladek
+ *<pre>
+ *              Huffman Tree Compression
+ * File:        HuffmanTree.java
+ * Description: Main storage for keys, data, and Values
+*               Holds important methods for the creation
+*               of the huffman tree
+ * @author      James Hua, Blake Hashimoto, Roger Vargas, Wei Jiang
+ * @since       6/1/15
+ * log:         6/1/15 Created the encode method
+ *              6/5/15 Created the decode method
+ * Special Thanks to
+ * Paul Bladek
+ * </pre>
  */
 public class HuffmanTree<T extends Comparable<? super T>>
         extends BinaryTree<HuffmanData<T>>
