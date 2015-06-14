@@ -7,8 +7,16 @@
 package huffman;
 
 /**
- *
- * @author Carrano
+ *<pre>
+ *              Binary Node Interface
+ * File:        BinaryNodeInterface.java
+ * Description: Interface implemented by the binary tree used
+ *              for the huffman compression
+ * @author      James Hua, Blake Hashimoto, Roger Vargas, Wei Jiang
+ * @since       6/1/15
+ * Special Thanks to
+ * Carrano
+ * </pre>
  */
 interface BinaryNodeInterface< T >
 {
