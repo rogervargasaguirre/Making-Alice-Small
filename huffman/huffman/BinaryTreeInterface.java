@@ -7,7 +7,16 @@
 package huffman;
 
 /**
- * @author Carranno
+ *<pre>
+ *              Binary Tree Interface
+ * File:        BinaryTreeInterface.java
+ * Description: Interface implemented by tht binary tree interface
+ *              Provides methods that must be written in binary tree
+ * @author      James Hua, Blake Hashimoto, Roger Vargas, Wei Jiang
+ * @since       6/1/15
+ * Special Thanks to
+ * Carrano
+ * </pre>
  */
 public interface BinaryTreeInterface < T > extends TreeInterface<T>,
     TreeIteratorInterface<T>
