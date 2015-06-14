@@ -52,8 +52,8 @@ public class Huffman
 //----------------------------------------------------
 // used for debugging encoding
 //----------------------------------------------------
-//        args = new String[1];
-//        args[0] = "alice.txt";
+        args = new String[1];
+        args[0] = "src/huffmantree/alice.txt";
 //----------------------------------------------------
 // used for debugging encoding
 //----------------------------------------------------
@@ -82,8 +82,10 @@ public class Huffman
                 coder.decode(textFileName);
             }
             catch(Exception e){
-                  System.out.println(e.getClass() + e.getMessage());  
+                System.out.println(e.getClass() + e.getMessage());  
+                e.printStackTrace();
         }
+            
     }
 
     /*
@@ -148,7 +150,6 @@ public class Huffman
             System.out.println("File open error");
         }
         ArrayList<Byte> arrayList = new ArrayList<>();
-        Character character;
         String output = "";
         String outputByte = null;
         while(in.hasNextLine())
@@ -262,19 +263,17 @@ public class Huffman
                 }
                 saveData.add(getByteValue(overflow));
             }
-            saveDataArray = new byte[saveData.size()];
-            for (int i = 0; i < saveData.size(); i++)
-                saveDataArray[i] = saveData.get(i);
+            saveDataArray = toArray(saveData);
             saveData = null;
             char[] addChar = traverseTree(saveDataArray, overSize); 
-            String lineOut = "";
+            StringBuilder lineOut = new StringBuilder("");
             for (int i = 0; i < addChar.length; i++){
                 if (addChar[i] == '\n'){
                     out.println(lineOut);
-                    lineOut = "";
+                    lineOut.delete(0, lineOut.length());
                 }
                 else{
-                    lineOut += addChar[i];
+                    lineOut.append(addChar[i]);
                 }
             }
             out.close();
@@ -289,15 +288,35 @@ public class Huffman
      */
     public char[] traverseTree(byte[] data, int overflow){
         ArrayList<Character> allChars = new ArrayList<>();
-        int iterations = 0;
+        StringBuilder value = new StringBuilder("");
+        StringBuilder test = new StringBuilder("");
         for (int i = 0; i < data.length; i++){
-            
+            String getVal = Integer.toBinaryString(data[i]);
+            int adjust = getVal.length() - Byte.SIZE;
+            if (adjust > 0)
+                getVal = getVal.substring(adjust);
+            else if (adjust < 0){
+                while (getVal.length() < 8)
+                    getVal = "0" + getVal;
+            }
+            if (i == data.length - 1)
+                getVal = getVal.substring(0, overflow);
+            value.append(getVal);
+            while (value.length() > 0){
+                test.append(value.substring(0, 1));
+                value.replace(0, value.length(), value.substring(1));
+                Character fromKey = codeMap.get(test.toString());
+                if (fromKey != null){
+                    test.delete(0, test.length());
+                    allChars.add(fromKey);
+                }
+            }
         }
         char[] charsArray = new char[allChars.size()];
-            for (int i = 0; i < allChars.size(); i++)
-                charsArray[i] = allChars.get(i);
-            allChars = null;
-            return charsArray;
+        for (int i = 0; i < allChars.size(); i++)
+            charsArray[i] = allChars.get(i);
+        allChars = null;
+        return charsArray;
     }
     /**
      * Gets byte value for a string
@@ -320,16 +339,6 @@ public class Huffman
         }
         return stringToByte;
     }
-    /**
-     * Takes a line of binary values and transforms it to the corresponding char
-     * value
-     * @param toChar String to convert to char 
-     * @return Character value to be added to string
-     */
-      public Character getChar(String toChar){
-        
-        return 'a';
-      }
       
     /**
      * writeEncodedFile
@@ -407,6 +416,5 @@ public class Huffman
         }
         return inputFile;
     }
- 
 }
 
