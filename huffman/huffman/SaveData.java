@@ -7,9 +7,15 @@
 package huffman;
 import java.io.*;
 /**
- * class for saving the initial sorted array
- *  of data/occurances
- * @author pbladek
+ *<pre>
+ *              Save Data
+ * File:        SaveData.java
+ * Description: UNUSED Alternative class for data and occurance storage
+ * @author      James Hua, Blake Hashimoto, Roger Vargas, Wei Jiang
+ * @since       6/1/15
+ * Special Thanks to
+ * Paul Bladek
+ * </pre>
  */
 public class SaveData implements Serializable
 {
