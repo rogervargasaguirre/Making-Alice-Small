@@ -2,11 +2,20 @@
  * HuffmanChar.java
  */
 
-package Huffman;
+package huffman;
 import java.io.*;
 /**
- *
- * @author pbladek
+ *<pre>
+ *              Huffman Character
+ * File:        HuffmanChar.java
+ * Description: Adds special method for easier writing of the huffman
+ *              data.
+ * @author      James Hua, Blake Hashimoto, Roger Vargas, Wei Jiang
+ * @since       6/1/15
+ * log:         6/11/15 Wrote toThreeBytes method
+ * Special Thanks to
+ * Paul Bladek
+ * </pre>
  */
 public class HuffmanChar extends HuffmanData<Character>
         implements Serializable
