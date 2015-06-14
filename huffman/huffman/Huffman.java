@@ -31,6 +31,7 @@ public class Huffman
     public static final int CHARMAX = 128;
     public static final byte CHARBITS = 7;
     public static final short CHARBITMAX = 128;
+    private String directory;
     private HuffmanTree<Character> theTree;
     private byte[] byteArray;
     private SortedMap<Character, String> keyMap;
@@ -103,6 +104,7 @@ public class Huffman
             inputFile = getFile();
             fileName = inputFile.getName();  
         }
+        directory = inputFile.getParent();
         int[] counter = new int[CHARMAX];  
         Scanner in = null;
         List<HuffmanChar> countList = new ArrayList<>();
@@ -201,16 +203,24 @@ public class Huffman
      * a huffman tree
      * @param fileName String file with huffman tree code
      * @return HuffmanData[] Array of huffman values
+     * @throws java.io.FileNotFoundException Thrown if file is not found
+     * @throws java.io.IOException Thrown if there is a file error
+     * @throws java.lang.ClassNotFoundException thrown if there is a class error
      */
-    public HuffmanData<Character>[] decodeCode(String fileName){
-        
+    public HuffmanData<Character>[] decodeCode(String fileName) 
+            throws FileNotFoundException, IOException, ClassNotFoundException
+    {
+        try (ObjectInputStream readObject = new ObjectInputStream(new FileInputStream(fileName))) {
+            Byte[] huffmanTree = (Byte[])readObject.readObject();
+        }
         return new HuffmanData[0];
     }
     /*
      * decode
      * @param inFileName the file to decode
      */   
-    public void decode(String inFileName) throws FileNotFoundException, IOException
+    public void decode(String inFileName) 
+            throws FileNotFoundException, IOException, ClassNotFoundException
     { 
         File inFile = new File(inFileName);
             if (!((inFile.exists()) && (inFile.canRead()))) {
@@ -221,7 +231,8 @@ public class Huffman
             inFile = getFile();
             inFileName = inFile.getName();  
         }
-        String outFileName = inFileName.replaceAll("\\Q.huf\\E", ".txt");
+            directory = inFile.getParent();
+        String outFileName = directory + "/" + inFileName.replaceAll("\\Q.huf\\E", ".txt");
         File outFile = new File(outFileName); 
         
         int overSize = 0;
@@ -232,7 +243,8 @@ public class Huffman
         
         try (PrintWriter out = new PrintWriter(outFile)) {
             if (codeMap == null)
-                theTree = new HuffmanTree<>(decodeCode(inFileName));
+                theTree = new HuffmanTree<>(decodeCode(
+                        directory + "/" + inFileName.replaceAll("\\Q.huf\\E", ".cod")));
             codeMap = theTree.getKeyMap();
             ArrayList<Byte> saveData = new ArrayList<>();
             String overflow = "";
@@ -241,7 +253,8 @@ public class Huffman
                 overflow = "";
                 if (line.length() % 8 != 0){
                     int overLength = line.length() % 8;
-                    overflow = line.substring(line.length() - overLength, line.length());
+                    overflow = line.substring(line.length() 
+                            - overLength, line.length());
                     line = line.substring(0, line.length() - overLength);
                 }
                 while (line.length() >= 8){
@@ -350,8 +363,9 @@ public class Huffman
         String encodeFileName =
                 fileName.substring(0, fileName.lastIndexOf(".")) + ".huf";
         try (ObjectOutputStream outputStream = new ObjectOutputStream(
-                new FileOutputStream(encodeFileName))) {
+                new FileOutputStream(directory + "/" + encodeFileName))) {
             outputStream.write(bytes);
+            outputStream.close();
         }
         
         catch(IOException e)
@@ -378,7 +392,7 @@ public class Huffman
             saveDataArray[3 * i + 2] = threeByteArray[2];
         }
         try (ObjectOutputStream outputStream = new ObjectOutputStream(
-                new FileOutputStream(keyFileName))) {
+                new FileOutputStream(directory + "/" + keyFileName))) {
             for (int i = 0; i <saveDataArray.length; i++)
             {
                 outputStream.writeByte(saveDataArray[i]);
@@ -394,7 +408,7 @@ public class Huffman
      * The method to get the file.
      * @return the selected file
      */
-    private static File getFile(){
+    private File getFile(){
          String inputFileName = "x";
         File inputFile = new File(inputFileName);
         JFileChooser chooser = new JFileChooser();
@@ -416,5 +430,6 @@ public class Huffman
         }
         return inputFile;
     }
+ 
 }
 
