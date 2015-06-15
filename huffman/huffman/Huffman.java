@@ -252,10 +252,10 @@ public class Huffman
         String outFileName = directory + inFile.getName().replaceAll("\\Q.huf\\E", ".txt");
         File outFile = new File(outFileName); 
         
-        int overSize = 0;
-        FileReader reader = new FileReader(inFile);
-        BufferedReader readCode = new BufferedReader(reader);
-        String line = readCode.readLine();
+//        int overSize = 0;
+//        FileReader reader = new FileReader(inFile);
+//        BufferedReader readCode = new BufferedReader(reader);
+//        String line = readCode.readLine();
        
         if (codeMap == null)
             theTree = new HuffmanTree<>(decodeCode(
@@ -295,25 +295,32 @@ public class Huffman
         PrintWriter out = new PrintWriter(outFile);
         int counter = 0;
         saveDataArray = new byte[(int)inFile.length()];
+        int size  = 0;
         while (readObj.available() != 0){
             byte[] temp = new byte[readObj.available()];
             
             readObj.readFully(temp);
-            System.arraycopy(temp, 0, saveDataArray, counter++ * temp.length, temp.length);
-        }    
-            char[] addChar = traverseTree(saveDataArray, overSize); 
-            StringBuilder lineOut = new StringBuilder("");
-            for (int i = 0; i < addChar.length; i++){
-                if (addChar[i] == '\n'){
-                    out.println(lineOut);
-                    lineOut.delete(0, lineOut.length());
-                }
-                else{
-                    lineOut.append(addChar[i]);
-                }
+            size += temp.length;
+            for (int i = 0; i < temp.length; i++){
+                saveDataArray[counter * 1024 + i] = temp[i];
             }
-            if (lineOut.length() > 0)
-                out.print(lineOut);
+            counter++;
+        }   
+        saveDataArray = Arrays.copyOf(saveDataArray, size);
+        readObj.close();
+        char[] addChar = traverseTree(saveDataArray); 
+        StringBuilder lineOut = new StringBuilder("");
+        for (int i = 0; i < addChar.length; i++){
+            if (addChar[i] == '\n'){
+                out.println(lineOut);
+                lineOut.delete(0, lineOut.length());
+            }
+            else{
+                lineOut.append(addChar[i]);
+            }
+        }
+        if (lineOut.length() > 0)
+            out.print(lineOut);
 //            saveDataArray = toArray(saveData);
 //            saveData = null;
         out.close();
@@ -325,7 +332,7 @@ public class Huffman
      * @param overflow int overflow for the last index to ignore
      * @return char[] array containing all characters in the file
      */
-    public char[] traverseTree(byte[] data, int overflow){
+    public char[] traverseTree(byte[] data){
         ArrayList<Character> allChars = new ArrayList<>();
         StringBuilder value = new StringBuilder("");
         StringBuilder test = new StringBuilder("");
@@ -338,8 +345,6 @@ public class Huffman
                 while (getVal.length() < 8)
                     getVal = "0" + getVal;
             }
-            if (i == data.length - 1)
-                getVal = getVal.substring(0, overflow);
             value.append(getVal);
             while (value.length() > 0){
                 test.append(value.substring(0, 1));
