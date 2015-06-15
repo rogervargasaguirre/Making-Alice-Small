@@ -36,6 +36,8 @@ public class Huffman
     private byte[] byteArray;
     private SortedMap<Character, String> keyMap;
     private SortedMap<String, Character> codeMap;
+    private String extension;
+    private String desc;
     HuffmanChar[] charCountArray;
     byte[] saveDataArray;
     
@@ -53,8 +55,8 @@ public class Huffman
 //----------------------------------------------------
 // used for debugging encoding
 //----------------------------------------------------
-        args = new String[1];
-        args[0] = "src/huffmantree/alice.txt";
+//        args = new String[1];
+//        args[0] = "src/huffmantree/alice.txt";
 //----------------------------------------------------
 // used for debugging encoding
 //----------------------------------------------------
@@ -95,6 +97,8 @@ public class Huffman
      */
     public void encode(String fileName)
     {
+        extension = "txt";
+        desc = "Text File";
         File inputFile = new File(fileName);
             if (!((inputFile.exists()) && (inputFile.canRead()))) {
                 inputFile = getFile();
@@ -231,6 +235,8 @@ public class Huffman
     public void decode(String inFileName) 
             throws FileNotFoundException, IOException, ClassNotFoundException
     { 
+        extension = "huf";
+        desc = "HUF File";
         File inFile = new File(inFileName);
             if (!((inFile.exists()) && (inFile.canRead()))) {
                 inFile = getFile();
@@ -430,7 +436,7 @@ public class Huffman
          String inputFileName = "x";
         File inputFile = new File(inputFileName);
         JFileChooser chooser = new JFileChooser();
-        FileNameExtensionFilter exten = new FileNameExtensionFilter("Text Document", "txt");
+        FileNameExtensionFilter exten = new FileNameExtensionFilter(desc, extension);
         chooser.setFileFilter(exten);
         chooser.setCurrentDirectory(inputFile.getAbsoluteFile()
                 .getParentFile());
@@ -450,4 +456,3 @@ public class Huffman
     }
  
 }
-
