@@ -4,7 +4,7 @@
  * Created on May 21, 2007, 1:01 PM
  */
 
-package huffman;
+package huffmantree;
 import java.util.*;
 import java.lang.*;
 import java.io.*;
@@ -60,7 +60,7 @@ public class Huffman
 //----------------------------------------------------
 //        args = new String[2];
 //        args[0] = "-d";
-//        args[1] = "alice.txt";  
+//        args[1] = "alice.huf";  
 //----------------------------------------------------        
         boolean decode = false;
         String textFileName = "";
@@ -142,7 +142,7 @@ public class Huffman
         keyMap = theTree.getCodeMap();
         codeMap = theTree.getKeyMap();
         System.out.println(""+keyMap);
-       // System.out.println(""+ codeMap);
+        System.out.println(""+ codeMap);
         try
         {
           in = new Scanner(inputFile);
@@ -175,7 +175,7 @@ public class Huffman
         arrayList.add((byte)Integer.parseInt(outputByte));
         byteArray = toArray(arrayList);
         arrayList = null;
-        
+        System.out.println(byteArray.length);
         
         
 
@@ -210,10 +210,19 @@ public class Huffman
     public HuffmanData<Character>[] decodeCode(String fileName) 
             throws FileNotFoundException, IOException, ClassNotFoundException
     {
+        HuffmanData<Character>[] allHuffman = null;
         try (ObjectInputStream readObject = new ObjectInputStream(new FileInputStream(fileName))) {
-            Byte[] huffmanTree = (Byte[])readObject.readObject();
+            allHuffman = new HuffmanChar[readObject.available() / 3];
+            byte[] recoverData = new byte[readObject.available()];
+            readObject.readFully(recoverData);
+            for (int i = 0; i < recoverData.length; i += 3){
+                byte[] holdThree = {recoverData[i], recoverData[i + 1], recoverData[i + 2]};
+                HuffmanChar temp = new HuffmanChar(holdThree);
+                allHuffman[i / 3] = temp;
+            }
+            readObject.close();
         }
-        return new HuffmanData[0];
+        return allHuffman;
     }
     /*
      * decode
@@ -232,7 +241,7 @@ public class Huffman
             inFileName = inFile.getName();  
         }
             directory = inFile.getParent();
-        String outFileName = directory + "/" + inFileName.replaceAll("\\Q.huf\\E", ".txt");
+        String outFileName = directory + "\\" + inFileName.replaceAll("\\Q.huf\\E", ".txt");
         File outFile = new File(outFileName); 
         
         int overSize = 0;
@@ -244,40 +253,45 @@ public class Huffman
         try (PrintWriter out = new PrintWriter(outFile)) {
             if (codeMap == null)
                 theTree = new HuffmanTree<>(decodeCode(
-                        directory + "/" + inFileName.replaceAll("\\Q.huf\\E", ".cod")));
+                        directory + "\\" + inFileName.replaceAll("\\Q.huf\\E", ".cod")));
             codeMap = theTree.getKeyMap();
-            ArrayList<Byte> saveData = new ArrayList<>();
-            String overflow = "";
-            while (line != null){
-                line = overflow + line;
-                overflow = "";
-                if (line.length() % 8 != 0){
-                    int overLength = line.length() % 8;
-                    overflow = line.substring(line.length() 
-                            - overLength, line.length());
-                    line = line.substring(0, line.length() - overLength);
-                }
-                while (line.length() >= 8){
-                    String holdEight = line.substring(0, 8);
-                    if (line.length() > 8)
-                        line = line.substring(8);
-                    else{
-                        line = "";
-                    }
-                    byte addValue = getByteValue(holdEight);
-                    saveData.add(addValue);
-                }
-                line = readCode.readLine();
-            }
-            if (overflow.length() > 0){
-                overSize = overflow.length();
-                while (overflow.length() < 8){
-                    overflow += '0';
-                }
-                saveData.add(getByteValue(overflow));
-            }
-            saveDataArray = toArray(saveData);
-            saveData = null;
+            System.out.println(codeMap);
+//            ArrayList<Byte> saveData = new ArrayList<>();
+//            String overflow = "";
+//            while (line != null){
+//                line = overflow + line;
+//                overflow = "";
+//                if (line.length() % 8 != 0){
+//                    int overLength = line.length() % 8;
+//                    overflow = line.substring(line.length() 
+//                            - overLength, line.length());
+//                    line = line.substring(0, line.length() - overLength);
+//                }
+//                while (line.length() >= 8){
+//                    String holdEight = line.substring(0, 8);
+//                    if (line.length() > 8)
+//                        line = line.substring(8);
+//                    else{
+//                        line = "";
+//                    }
+//                    byte addValue = getByteValue(holdEight);
+//                    saveData.add(addValue);
+//                }
+//                line = readCode.readLine();
+//            }
+//            if (overflow.length() > 0){
+//                overSize = overflow.length();
+//                while (overflow.length() < 8){
+//                    overflow += '0';
+//                }
+//                saveData.add(getByteValue(overflow));
+//            }
+            ObjectInputStream readObj = new ObjectInputStream(new FileInputStream(inFile));
+            System.out.println(readObj.available());
+            saveDataArray = new byte[readObj.available()];
+            readObj.readFully(saveDataArray);
+//            saveDataArray = toArray(saveData);
+//            saveData = null;
             char[] addChar = traverseTree(saveDataArray, overSize); 
             StringBuilder lineOut = new StringBuilder("");
             for (int i = 0; i < addChar.length; i++){
@@ -289,6 +303,9 @@ public class Huffman
                     lineOut.append(addChar[i]);
                 }
             }
+            if (lineOut.length() > 0)
+                out.println(lineOut);
+            lineOut = null;
             out.close();
         } 
     }
@@ -317,7 +334,7 @@ public class Huffman
             value.append(getVal);
             while (value.length() > 0){
                 test.append(value.substring(0, 1));
-                value.replace(0, value.length(), value.substring(1));
+                value = new StringBuilder(value.substring(1));
                 Character fromKey = codeMap.get(test.toString());
                 if (fromKey != null){
                     test.delete(0, test.length());
@@ -363,7 +380,7 @@ public class Huffman
         String encodeFileName =
                 fileName.substring(0, fileName.lastIndexOf(".")) + ".huf";
         try (ObjectOutputStream outputStream = new ObjectOutputStream(
-                new FileOutputStream(directory + "/" + encodeFileName))) {
+                new FileOutputStream(directory + "\\" + encodeFileName))) {
             outputStream.write(bytes);
             outputStream.close();
         }
@@ -392,10 +409,11 @@ public class Huffman
             saveDataArray[3 * i + 2] = threeByteArray[2];
         }
         try (ObjectOutputStream outputStream = new ObjectOutputStream(
-                new FileOutputStream(directory + "/" + keyFileName))) {
+                new FileOutputStream(directory + "\\" + keyFileName))) {
             for (int i = 0; i <saveDataArray.length; i++)
             {
                 outputStream.writeByte(saveDataArray[i]);
+               
             }
             outputStream.close();
         }
