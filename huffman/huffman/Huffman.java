@@ -56,7 +56,7 @@ public class Huffman
 // used for debugging encoding
 //----------------------------------------------------
 //        args = new String[1];
-//        args[0] = "src/huffmantree/alice.txt";
+//        args[0] = "C:\\Users\\Roger\\OneDrive\\NetBeans\\huffmanTree\\alice.txt";
 //----------------------------------------------------
 // used for debugging encoding
 //----------------------------------------------------
@@ -95,20 +95,19 @@ public class Huffman
      * encode
      * @param fileName the file to encode
      */
-    public void encode(String fileName)
+    public void encode(String fileName) throws IOException
     {
         extension = "txt";
         desc = "Text File";
         File inputFile = new File(fileName);
-            if (!((inputFile.exists()) && (inputFile.canRead()))) {
-                inputFile = getFile();
-                fileName =inputFile.getName();
-            }
-            else {
+        if (!((inputFile.exists()) && (inputFile.canRead()))) {
             inputFile = getFile();
-            fileName = inputFile.getName();  
+            fileName =inputFile.getName();
         }
-        directory = inputFile.getParent();
+        if (inputFile.getParent() != null)
+            directory = inputFile.getParent() + "\\";
+        else
+            directory = "";
         int[] counter = new int[CHARMAX];  
         Scanner in = null;
         List<HuffmanChar> countList = new ArrayList<>();
@@ -184,9 +183,9 @@ public class Huffman
         
 
 
-       File hufFile = writeEncodedFile(byteArray, fileName);
+       File hufFile = writeEncodedFile(byteArray, inputFile.getName());
        System.out.println(((float)hufFile.length() / inputFile.length() * 100.0) + "%");
-        writeKeyFile(fileName);
+        writeKeyFile(inputFile.getName());
     } 
     /**
      *Takes List and converts it to primitive byte array
@@ -231,6 +230,9 @@ public class Huffman
     /*
      * decode
      * @param inFileName the file to decode
+     * @throws java.io.FileNotFoundException Thrown if file is not found
+     * @throws java.io.IOException Thrown if there is a file error
+     * @throws java.lang.ClassNotFoundException thrown if there is a class error
      */   
     public void decode(String inFileName) 
             throws FileNotFoundException, IOException, ClassNotFoundException
@@ -238,16 +240,16 @@ public class Huffman
         extension = "huf";
         desc = "HUF File";
         File inFile = new File(inFileName);
-            if (!((inFile.exists()) && (inFile.canRead()))) {
-                inFile = getFile();
-                inFileName =inFile.getName();
-            }
-            else {
+        if (!((inFile.exists()) && (inFile.canRead()))) {
             inFile = getFile();
-            inFileName = inFile.getName();  
+            inFileName =inFile.getName();
         }
-            directory = inFile.getParent();
-        String outFileName = directory + "\\" + inFileName.replaceAll("\\Q.huf\\E", ".txt");
+        if (inFile.getParent() != null)
+            directory = inFile.getParent() + "\\";
+        else{
+            directory = "";
+        }
+        String outFileName = directory + inFile.getName().replaceAll("\\Q.huf\\E", ".txt");
         File outFile = new File(outFileName); 
         
         int overSize = 0;
@@ -257,9 +259,8 @@ public class Huffman
        
         if (codeMap == null)
             theTree = new HuffmanTree<>(decodeCode(
-                    directory + "\\" + inFileName.replaceAll("\\Q.huf\\E", ".cod")));
+                    directory + inFileName.replaceAll("\\Q.huf\\E", ".cod")));
         codeMap = theTree.getKeyMap();
-        System.out.println(codeMap);
 //            ArrayList<Byte> saveData = new ArrayList<>();
 //            String overflow = "";
 //            while (line != null){
@@ -291,14 +292,17 @@ public class Huffman
 //                saveData.add(getByteValue(overflow));
 //            }
         ObjectInputStream readObj = new ObjectInputStream(new FileInputStream(inFile));
-        System.out.println(readObj.available());
-        saveDataArray = new byte[readObj.available()];
-        readObj.readFully(saveDataArray);
-//            saveDataArray = toArray(saveData);
-//            saveData = null;
-        char[] addChar = traverseTree(saveDataArray, overSize); 
-        StringBuilder lineOut = new StringBuilder("");
-        try (PrintWriter out = new PrintWriter(outFile)) {
+        PrintWriter out = new PrintWriter(outFile);
+        int counter = 0;
+        saveDataArray = new byte[(int)inFile.length()];
+        while (readObj.available() != 0){
+            byte[] temp = new byte[readObj.available()];
+            
+            readObj.readFully(temp);
+            System.arraycopy(temp, 0, saveDataArray, counter++ * temp.length, temp.length);
+        }    
+            char[] addChar = traverseTree(saveDataArray, overSize); 
+            StringBuilder lineOut = new StringBuilder("");
             for (int i = 0; i < addChar.length; i++){
                 if (addChar[i] == '\n'){
                     out.println(lineOut);
@@ -309,16 +313,17 @@ public class Huffman
                 }
             }
             if (lineOut.length() > 0)
-                out.println(lineOut);
-            out.close();
-        } 
+                out.print(lineOut);
+//            saveDataArray = toArray(saveData);
+//            saveData = null;
+        out.close();
     }
     /**
      * Takes a byte array and traverses the huffman tree to get the
      * corresponding byte value
      * @param data byte[] Array of bytes containing all the keys
      * @param overflow int overflow for the last index to ignore
-     * @return 
+     * @return char[] array containing all characters in the file
      */
     public char[] traverseTree(byte[] data, int overflow){
         ArrayList<Character> allChars = new ArrayList<>();
@@ -379,20 +384,16 @@ public class Huffman
      * @param bytes bytes for file
      * @param fileName file input
      */ 
-    public File writeEncodedFile(byte[] bytes, String fileName)
+    public File writeEncodedFile(byte[] bytes, String fileName) throws IOException
     {
         String encodeFileName =
                 fileName.substring(0, fileName.lastIndexOf(".")) + ".huf";
+        File encodeFile = new File(directory + encodeFileName);
         try (ObjectOutputStream outputStream = new ObjectOutputStream(
-                new FileOutputStream(directory + "\\" + encodeFileName))) {
+                new FileOutputStream(encodeFile))) {
             outputStream.write(bytes);
             outputStream.close();
-        }
-        
-        catch(IOException e)
-        {
-            System.out.println("File open error");
-        }
+        }  
         return new File(encodeFileName);
     }
    
@@ -400,7 +401,7 @@ public class Huffman
      * writeKeyFile
      * @param fileName the name of the file to write to
      */
-    public void writeKeyFile(String fileName)
+    public void writeKeyFile(String fileName) throws IOException
     {
         String keyFileName =
                 fileName.substring(0, fileName.lastIndexOf(".")) + ".cod";
@@ -412,19 +413,16 @@ public class Huffman
             saveDataArray[3 * i + 1] = threeByteArray[1];
             saveDataArray[3 * i + 2] = threeByteArray[2];
         }
+        File keyFile = new File(directory + keyFileName);
         try (ObjectOutputStream outputStream = new ObjectOutputStream(
-                new FileOutputStream(directory + "\\" + keyFileName))) {
+                new FileOutputStream(keyFile))) {
             for (int i = 0; i <saveDataArray.length; i++)
             {
                 outputStream.writeByte(saveDataArray[i]);
                
             }
             outputStream.close();
-        }
-        catch(IOException e)
-        {
-            System.out.println("File open error");
-        }
+        }   
     }
      /**
      * The method to get the file.
