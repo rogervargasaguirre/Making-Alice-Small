@@ -60,9 +60,9 @@ public class Huffman
 //----------------------------------------------------
 // used for debugging encoding
 //----------------------------------------------------
-//        args = new String[2];
-//        args[0] = "-d";
-//        args[1] = "alice.huf";  
+        args = new String[2];
+        args[0] = "-d";
+        args[1] = "alice.huf";  
 //----------------------------------------------------        
         boolean decode = false;
         String textFileName = "";
@@ -254,14 +254,12 @@ public class Huffman
         FileReader reader = new FileReader(inFile);
         BufferedReader readCode = new BufferedReader(reader);
         String line = readCode.readLine();
-        
-        
-        try (PrintWriter out = new PrintWriter(outFile)) {
-            if (codeMap == null)
-                theTree = new HuffmanTree<>(decodeCode(
-                        directory + "\\" + inFileName.replaceAll("\\Q.huf\\E", ".cod")));
-            codeMap = theTree.getKeyMap();
-            System.out.println(codeMap);
+       
+        if (codeMap == null)
+            theTree = new HuffmanTree<>(decodeCode(
+                    directory + "\\" + inFileName.replaceAll("\\Q.huf\\E", ".cod")));
+        codeMap = theTree.getKeyMap();
+        System.out.println(codeMap);
 //            ArrayList<Byte> saveData = new ArrayList<>();
 //            String overflow = "";
 //            while (line != null){
@@ -292,14 +290,15 @@ public class Huffman
 //                }
 //                saveData.add(getByteValue(overflow));
 //            }
-            ObjectInputStream readObj = new ObjectInputStream(new FileInputStream(inFile));
-            System.out.println(readObj.available());
-            saveDataArray = new byte[readObj.available()];
-            readObj.readFully(saveDataArray);
+        ObjectInputStream readObj = new ObjectInputStream(new FileInputStream(inFile));
+        System.out.println(readObj.available());
+        saveDataArray = new byte[readObj.available()];
+        readObj.readFully(saveDataArray);
 //            saveDataArray = toArray(saveData);
 //            saveData = null;
-            char[] addChar = traverseTree(saveDataArray, overSize); 
-            StringBuilder lineOut = new StringBuilder("");
+        char[] addChar = traverseTree(saveDataArray, overSize); 
+        StringBuilder lineOut = new StringBuilder("");
+        try (PrintWriter out = new PrintWriter(outFile)) {
             for (int i = 0; i < addChar.length; i++){
                 if (addChar[i] == '\n'){
                     out.println(lineOut);
@@ -311,7 +310,6 @@ public class Huffman
             }
             if (lineOut.length() > 0)
                 out.println(lineOut);
-            lineOut = null;
             out.close();
         } 
     }
@@ -452,7 +450,14 @@ public class Huffman
                     getFile();
             }
         }
+        else if (returnValue == JFileChooser.CANCEL_OPTION){
+            int choice = JOptionPane.showConfirmDialog(null, "Choose Another File?", 
+                    "File Canceled", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                if (choice == JOptionPane.YES_OPTION)
+                    getFile();
+        }
         return inputFile;
     }
  
 }
+
